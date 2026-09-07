@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-linux-appimage:
+    name: Build Linux x64 AppImage
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build AppImage (Linux x64)
+        env:
+          # 只构建 linux x64 AppImage，不做 deb/rpm/arm64，也不发布 Release
+          BIU_LINUX_TARGETS: "AppImage:x64"
+        run: pnpm build
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Biu-linux-x64-AppImage
+          path: dist/artifacts/*.AppImage
+          if-no-files-found: error
+          retention-days: 30

@@ -4,6 +4,34 @@ import { build as electronBuild } from "electron-builder";
 import pkg from "../package.json";
 import { ELECTRON_OUT_DIRNAME, ELECTRON_ICON_BASE_PATH } from "../shared/path";
 
+/**
+ * 解析 Linux 打包目标。
+ *
+ * CI 可通过环境变量收敛构建范围（多项用逗号分隔，arch 缺省为 x64）：
+ *   BIU_LINUX_TARGETS="AppImage:x64"
+ *   BIU_LINUX_TARGETS="AppImage:x64,deb:arm64"
+ *
+ * 未设置时保持默认：AppImage / deb / rpm 的 x64 + arm64 全量构建。
+ */
+function resolveLinuxTargets() {
+  const fromEnv = process.env.BIU_LINUX_TARGETS;
+  if (fromEnv) {
+    return fromEnv
+      .split(",")
+      .map(entry => entry.trim())
+      .filter(Boolean)
+      .map(entry => {
+        const [target, arch] = entry.split(":");
+        return { target, arch: [arch?.trim() || "x64"] };
+      });
+  }
+  return [
+    { target: "AppImage", arch: ["x64", "arm64"] },
+    { target: "deb", arch: ["x64", "arm64"] },
+    { target: "rpm", arch: ["x64", "arm64"] },
+  ];
+}
+
 export async function buildElectron() {
   await electronBuild({
     publish: "onTag",
@@ -64,11 +92,7 @@ export async function buildElectron() {
         extraResources: [{ from: "electron/ffmpeg/ffmpeg-mac-${arch}", to: "electron/ffmpeg/ffmpeg-mac-${arch}" }],
       },
       linux: {
-        target: [
-          { target: "AppImage", arch: ["x64", "arm64"] },
-          { target: "deb", arch: ["x64", "arm64"] },
-          { target: "rpm", arch: ["x64", "arm64"] },
-        ],
+        target: resolveLinuxTargets(),
         icon: `${ELECTRON_ICON_BASE_PATH}/logo.png`,
         category: "AudioVideo",
         synopsis: "Biu - bilibili music desktop application",
@@ -91,5 +115,7 @@ export async function buildElectron() {
     })
     .catch(error => {
       logger.error(error);
+      // 抛出错误让 `pnpm build` 以非零码退出，避免 CI 把构建失败吞掉
+      throw error;
     });
 }
