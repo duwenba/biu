@@ -29,6 +29,7 @@ export const channel = {
     resume: "download:resume",
     cancel: "download:cancel",
     retry: "download:retry",
+    retryAllFailed: "download:retry-all-failed",
     sync: "download:sync",
     clear: "download:clear",
   },
@@ -37,6 +38,9 @@ export const channel = {
     getNeteaseLyrics: "lyrics:netease-lyrics",
     searchLrclib: "lyrics:lrclib-search",
     addFurigana: "lyrics:add-furigana",
+
+    readLocal: "lyrics:read-local",
+    writeLocal: "lyrics:write-local",
   },
   router: {
     navigate: "router:navigate",
@@ -77,6 +81,7 @@ export const channel = {
   localMusic: {
     scan: "local-music:scan",
     deleteFile: "local-music:delete-file",
+    readCover: "local-music:read-cover",
   },
   window: {
     toggleMini: "window:toggle-mini",

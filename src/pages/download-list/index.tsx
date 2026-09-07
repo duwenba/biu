@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Button, Chip, Tab, Tabs, Tooltip } from "@heroui/react";
-import { RiDeleteBinLine, RiExternalLinkLine, RiFolderLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiExternalLinkLine, RiFolderLine, RiRefreshLine } from "@remixicon/react";
 import { filesize } from "filesize";
 
 import { formatMillisecond } from "@/common/utils/time";
@@ -58,6 +58,12 @@ const DownloadList = () => {
     await window.electron.openDirectory(downloadPath);
   };
 
+  const retryAllFailed = async () => {
+    await window.electron.retryAllFailedMediaDownloadTask();
+  };
+
+  const hasFailed = downloadList.some(item => item.status === "failed");
+
   const getFileQuality = (item: MediaDownloadTask) => {
     if (item.outputFileType === "video") {
       return item.videoResolution
@@ -108,13 +114,26 @@ const DownloadList = () => {
             <Tab key="audio" title="音频" />
             <Tab key="video" title="视频" />
           </Tabs>
-          {Boolean(filteredList.length) && (
-            <Tooltip content="清空记录" closeDelay={0}>
-              <Button isIconOnly variant="flat" onPress={clearDownloadList}>
-                <RiDeleteBinLine size={18} />
+          <div className="flex items-center space-x-1">
+            {hasFailed && (
+              <Button
+                size="sm"
+                variant="flat"
+                color="warning"
+                startContent={<RiRefreshLine size={16} />}
+                onPress={retryAllFailed}
+              >
+                重试全部
               </Button>
-            </Tooltip>
-          )}
+            )}
+            {Boolean(filteredList.length) && (
+              <Tooltip content="清空记录" closeDelay={0}>
+                <Button isIconOnly variant="flat" onPress={clearDownloadList}>
+                  <RiDeleteBinLine size={18} />
+                </Button>
+              </Tooltip>
+            )}
+          </div>
         </div>
       </div>
 
