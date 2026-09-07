@@ -78,6 +78,7 @@ export function registerLyricsHandlers() {
 
   ipcMain.handle(channel.lyrics.addFurigana, async (_, text: string) => {
     return addFurigana(text);
+  });
 
   ipcMain.handle(channel.lyrics.readLocal, async (_, filePathOrUrl: string) => {
     if (!filePathOrUrl) return null;
