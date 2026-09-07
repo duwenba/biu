@@ -54,6 +54,7 @@ const FullScreenPlayer = () => {
       })),
     );
   const playItem = list.find(item => item.id === playId);
+  const isLocal = playItem?.source === "local";
 
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1000);
   const [windowHeight, setWindowHeight] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
